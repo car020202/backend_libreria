@@ -39,5 +39,72 @@ public class UserService {
 
         return user;
     }
+    // Eliminar usuario (Solo admins)
+    public void deleteUser(Long id, String adminEmail) throws Exception {
+        User admin = userRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new Exception("Admin no encontrado."));
+
+        if (!admin.getAccesoSistema()) {
+            throw new Exception("Acceso denegado. Solo los admins pueden eliminar usuarios.");
+        }
+
+        User userToDelete = userRepository.findById(id)
+                .orElseThrow(() -> new Exception("Usuario no encontrado."));
+
+        userRepository.delete(userToDelete);
+    }
+
+    // Editar usuario
+   // Editar usuario
+public User updateUser(Long id, User updatedUser, String requesterEmail) throws Exception {
+    // Obtener el usuario que está realizando la solicitud
+    User requester = userRepository.findByEmail(requesterEmail)
+            .orElseThrow(() -> new Exception("Usuario solicitante no encontrado."));
+
+    // Obtener el usuario a editar
+    User existingUser = userRepository.findById(id)
+            .orElseThrow(() -> new Exception("Usuario no encontrado."));
+
+    // Validar permisos: un usuario solo puede editar su propio perfil
+    if (!requester.getAccesoSistema() && !requester.getId().equals(id)) {
+        throw new Exception("Acceso denegado. No puedes editar este usuario.");
+    }
+
+    // Si es un usuario normal, asegurarse de que no pueda modificar 'estado' ni 'acceso_sistema'
+    if (!requester.getAccesoSistema()) {
+        updatedUser.setAccesoSistema(existingUser.getAccesoSistema()); // Mantener acceso original
+        updatedUser.setEstado(existingUser.getEstado()); // Mantener estado original
+    }
+
+    // Si es un administrador, podrá modificar todos los campos excepto 'estado' y 'acceso_sistema' en su propio perfil
+    if (requester.getAccesoSistema()) {
+        // Si el administrador está editando su propio perfil, puede modificar todo
+        if (requester.getId().equals(id)) {
+            updatedUser.setAccesoSistema(existingUser.getAccesoSistema());
+            updatedUser.setEstado(existingUser.getEstado());
+        } else {
+            // Si el administrador está editando otro usuario, solo puede cambiar 'nombre', 'apellido', 'email', 'clave'
+            updatedUser.setAccesoSistema(existingUser.getAccesoSistema()); // Mantener acceso original
+            updatedUser.setEstado(existingUser.getEstado()); // Mantener estado original
+        }
+    }
+
+    // Encriptar contraseña si fue actualizada
+    if (updatedUser.getClave() != null && !updatedUser.getClave().isEmpty()) {
+        updatedUser.setClave(passwordEncoder.encode(updatedUser.getClave()));
+    } else {
+        updatedUser.setClave(existingUser.getClave()); // Mantener contraseña existente
+    }
+
+    // Actualizar los demás campos
+    existingUser.setNombre(updatedUser.getNombre());
+    existingUser.setApellido(updatedUser.getApellido());
+    existingUser.setEmail(updatedUser.getEmail());
+    existingUser.setClave(updatedUser.getClave());
+    existingUser.setAccesoSistema(updatedUser.getAccesoSistema());
+    existingUser.setEstado(updatedUser.getEstado());
+
+    return userRepository.save(existingUser);
+}
 }
 

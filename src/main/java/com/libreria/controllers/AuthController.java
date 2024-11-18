@@ -36,5 +36,31 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(401).body(e.getMessage());
         }
-}
+    }
+     // Eliminar usuario (Solo admins)
+     @DeleteMapping("/user/delete")
+        public ResponseEntity<?> deleteUser(@RequestBody Map<String, Object> request) {
+        try {
+         Long id = Long.valueOf(request.get("id").toString());
+         String adminEmail = request.get("adminEmail").toString();
+         userService.deleteUser(id, adminEmail);
+         return ResponseEntity.ok("Usuario eliminado exitosamente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        }
+    }
+ 
+     // Editar usuario
+     @PutMapping("/user/{id}")
+     public ResponseEntity<?> updateUser(
+             @PathVariable Long id,
+             @RequestBody User updatedUser,
+             @RequestParam String requesterEmail) {
+         try {
+             User user = userService.updateUser(id, updatedUser, requesterEmail);
+             return ResponseEntity.ok(user);
+         } catch (Exception e) {
+             return ResponseEntity.status(403).body(e.getMessage());
+         }
+     }
 }
