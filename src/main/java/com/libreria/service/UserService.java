@@ -54,29 +54,29 @@ public class UserService {
         userRepository.delete(userToDelete);
     }
 
-    // Editar usuario
+   
    // Editar usuario
-public User updateUser(Long id, User updatedUser, String requesterEmail) throws Exception {
+    public User updateUser(Long id, User updatedUser, String requesterEmail) throws Exception {
     // Obtener el usuario que está realizando la solicitud
-    User requester = userRepository.findByEmail(requesterEmail)
+     User requester = userRepository.findByEmail(requesterEmail)
             .orElseThrow(() -> new Exception("Usuario solicitante no encontrado."));
 
-    // Obtener el usuario a editar
-    User existingUser = userRepository.findById(id)
+     // Obtener el usuario a editar
+     User existingUser = userRepository.findById(id)
             .orElseThrow(() -> new Exception("Usuario no encontrado."));
 
-    // Validar permisos: un usuario solo puede editar su propio perfil
-    if (!requester.getAccesoSistema() && !requester.getId().equals(id)) {
+     // Validar permisos: un usuario solo puede editar su propio perfil
+        if (!requester.getAccesoSistema() && !requester.getId().equals(id)) {
         throw new Exception("Acceso denegado. No puedes editar este usuario.");
-    }
+        }
 
-    // Si es un usuario normal, asegurarse de que no pueda modificar 'estado' ni 'acceso_sistema'
-    if (!requester.getAccesoSistema()) {
+        // Si es un usuario normal, asegurarse de que no pueda modificar 'estado' ni 'acceso_sistema'
+        if (!requester.getAccesoSistema()) {
         updatedUser.setAccesoSistema(existingUser.getAccesoSistema()); // Mantener acceso original
         updatedUser.setEstado(existingUser.getEstado()); // Mantener estado original
-    }
+        }
 
-    // Si es un administrador, podrá modificar todos los campos excepto 'estado' y 'acceso_sistema' en su propio perfil
+     // Si es un administrador, podrá modificar todos los campos excepto 'estado' y 'acceso_sistema' en su propio perfil
     if (requester.getAccesoSistema()) {
         // Si el administrador está editando su propio perfil, puede modificar todo
         if (requester.getId().equals(id)) {
@@ -97,14 +97,14 @@ public User updateUser(Long id, User updatedUser, String requesterEmail) throws 
     }
 
     // Actualizar los demás campos
-    existingUser.setNombre(updatedUser.getNombre());
-    existingUser.setApellido(updatedUser.getApellido());
-    existingUser.setEmail(updatedUser.getEmail());
-    existingUser.setClave(updatedUser.getClave());
-    existingUser.setAccesoSistema(updatedUser.getAccesoSistema());
-    existingUser.setEstado(updatedUser.getEstado());
+        existingUser.setNombre(updatedUser.getNombre());
+        existingUser.setApellido(updatedUser.getApellido());
+        existingUser.setEmail(updatedUser.getEmail());
+        existingUser.setClave(updatedUser.getClave());
+        existingUser.setAccesoSistema(updatedUser.getAccesoSistema());
+        existingUser.setEstado(updatedUser.getEstado());
 
-    return userRepository.save(existingUser);
-}
+     return userRepository.save(existingUser);
+    }
 }
 
