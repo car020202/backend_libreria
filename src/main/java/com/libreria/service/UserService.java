@@ -7,6 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -39,6 +40,11 @@ public class UserService {
 
         return user;
     }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+    
     // Eliminar usuario (Solo admins)
     public void deleteUser(Long id, String adminEmail) throws Exception {
         User admin = userRepository.findByEmail(adminEmail)
